@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREATE - Видеоплатформа</title>
+    <style>
+        /* ВСТАВЬ СЮДА ВЕСЬ CSS КОД ИЗ style.css */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { --primary: #ff2d55; --secondary: #5856d6; --dark: #1a1a1a; --light: #f8f9fa; }
+        body { background: var(--dark); color: var(--light); }
+        /* ... и весь остальной CSS код ... */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="showPage('home')">CREATE</div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Поиск видео...">
+            <button onclick="searchVideos()">🔍</button>
+        </div>
+        <div class="user-menu">
+            <span id="userInfo" style="display:none"></span>
+            <button onclick="showPage('login')" id="loginBtn">Войти</button>
+            <button onclick="showPage('upload')" id="uploadBtn" style="display:none">📹 Загрузить</button>
+            <button onclick="logout()" id="logoutBtn" style="display:none">Выйти</button>
+        </div>
+    </header>
+
+    <main id="mainContent">
+        <!-- ДОМАШНЯЯ СТРАНИЦА -->
+        <div id="homePage" class="page active">
+            <section class="hero">
+                <h1>Создавайте и делитесь видео</h1>
+                <p>Простая платформа для вашего творчества</p>
+                <button onclick="showPage('login')">Начать создавать</button>
+            </section>
+
+            <section class="recommendations">
+                <h2>Популярные видео</h2>
+                <div class="videos-grid" id="videosGrid">
+                    <!-- Видео загружаются через JavaScript -->
+                </div>
+            </section>
+        </div>
+
+        <!-- СТРАНИЦА ВХОДА -->
+        <div id="loginPage" class="page">
+            <div class="auth-container">
+                <h2>Вход в аккаунт</h2>
+                <div class="auth-form">
+                    <input type="text" id="loginUsername" placeholder="Имя пользователя">
+                    <input type="password" id="loginPassword" placeholder="Пароль">
+                    <button onclick="login()">Войти</button>
+                    <p style="margin-top: 1rem; text-align: center;">
+                        Нет аккаунта? <a href="#" onclick="showPage('register')">Зарегистрируйтесь</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА РЕГИСТРАЦИИ -->
+        <div id="registerPage" class="page">
+            <div class="auth-container">
+                <h2>Регистрация</h2>
+                <div class="auth-form">
+                    <input type="text" id="regUsername" placeholder="Имя пользователя">
+                    <input type="email" id="regEmail" placeholder="Email">
+                    <input type="password" id="regPassword" placeholder="Пароль">
+                    <button onclick="register()">Создать аккаунт</button>
+                    <p style="margin-top: 1rem; text-align: center;">
+                        Есть аккаунт? <a href="#" onclick="showPage('login')">Войдите</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА ЗАГРУЗКИ -->
+        <div id="uploadPage" class="page">
+            <div class="section">
+                <h2>📹 Загрузить видео</h2>
+                <div class="upload-form">
+                    <input type="text" id="videoTitle" placeholder="Название видео">
+                    <textarea id="videoDescription" placeholder="Описание видео"></textarea>
+                    <input type="text" id="videoUrl" placeholder="Ссылка на видео (YouTube, Vimeo и т.д.)">
+                    <button onclick="uploadVideo()">🚀 Опубликовать видео</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТРАНИЦА ПРОСМОТРА -->
+        <div id="watchPage" class="page">
+            <div class="watch-container">
+                <div class="video-player">
+                    <iframe id="videoPlayer" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <div class="video-info">
+                    <h1 id="watchTitle"></h1>
+                    <div class="video-actions">
+                        <button onclick="likeVideo()">❤️ <span id="likeCount">0</span></button>
+                        <span id="viewCount">0 просмотров</span>
+                    </div>
+                    <div class="channel-info">
+                        <h3 id="channelName"></h3>
+                    </div>
+                    <p id="watchDescription"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ВСТАВЬ СЮДА ВЕСЬ JavaScript КОД ИЗ app.js
+        // Плюс добавь этот код:
+
+        // Простая база данных в localStorage
+        let videos = JSON.parse(localStorage.getItem('videos') || '[]');
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        let currentVideo = null;
+
+        // Инициализация базы данных
+        function initializeData() {
+            if (videos.length === 0) {
+                videos = [
+                    {
+                        id: 1,
+                        title: "Добро пожаловать на CREATE!",
+                        description: "Первое видео на нашей платформе",
+                        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                        thumbnail: "🎬",
+                        channel: "CREATE Team",
+                        views: 150,
+                        likes: 25,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('videos', JSON.stringify(videos));
+            }
+
+            if (users.length === 0) {
+                users = [
+                    {
+                        id: 1,
+                        username: "admin",
+                        email: "admin@create.com",
+                        password: "123456"
+                    }
+                ];
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        // Навигация по страницам
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName + 'Page').classList.add('active');
+            
+            if (pageName === 'home') {
+                loadVideos();
+            }
+        }
+
+        // Загрузка видео
+        function loadVideos() {
+            const container = document.getElementById('videosGrid');
+            container.innerHTML = videos.map(video => `
+                <div class="video-card" onclick="watchVideo(${video.id})">
+                    <div class="video-thumbnail">${video.thumbnail}</div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-channel">${video.channel}</div>
+                        <div class="video-stats">
+                            <span>👁️ ${video.views}</span>
+                            <span>❤️ ${video.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Просмотр видео
+        function watchVideo(videoId) {
+            const video = videos.find(v => v.id === videoId);
+            if (video) {
+                currentVideo = video;
+                document.getElementById('videoPlayer').src = video.videoUrl;
+                document.getElementById('watchTitle').textContent = video.title;
+                document.getElementById('watchDescription').textContent = video.description;
+                document.getElementById('channelName').textContent = video.channel;
+                document.getElementById('viewCount').textContent = video.views + ' просмотров';
+                document.getElementById('likeCount').textContent = video.likes;
+                
+                // Увеличиваем просмотры
+                video.views++;
+                localStorage.setItem('videos', JSON.stringify(videos));
+                
+                showPage('watch');
+            }
+        }
+
+        // Регистрация
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            if (users.find(u => u.username === username)) {
+                alert('Пользователь уже существует');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                username,
+                email,
+                password
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Регистрация успешна!');
+            showPage('login');
+        }
+
+        // Вход
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                updateUI();
+                showPage('home');
+            } else {
+                alert('Неверные данные');
+            }
+        }
+
+        // Выход
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateUI();
+            showPage('home');
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('userInfo').textContent = currentUser.username;
+                document.getElementById('userInfo').style.display = 'inline';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('uploadBtn').style.display = 'inline-block';
+                document.getElementById('logoutBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'inline-block';
+                document.getElementById('uploadBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+            }
+        }
+
+        // Загрузка видео
+        function uploadVideo() {
+            if (!currentUser) {
+                alert('Войдите чтобы загружать видео');
+                return;
+            }
+            
+            const title = document.getElementById('videoTitle').value;
+            const description = document.getElementById('videoDescription').value;
+            const videoUrl = document.getElementById('videoUrl').value;
+            
+            if (!title || !videoUrl) {
+                alert('Заполните название и ссылку на видео');
+                return;
+            }
+            
+            const newVideo = {
+                id: Date.now(),
+                title,
+                description,
+                videoUrl,
+                thumbnail: "🎬",
+                channel: currentUser.username,
+                views: 0,
+                likes: 0,
+                createdAt: new Date().toISOString()
+            };
+            
+            videos.push(newVideo);
+            localStorage.setItem('videos', JSON.stringify(videos));
+            
+            alert('Видео опубликовано!');
+            document.getElementById('videoTitle').value = '';
+            document.getElementById('videoDescription').value = '';
+            document.getElementById('videoUrl').value = '';
+            showPage('home');
+        }
+
+        // Лайк видео
+        function likeVideo() {
+            if (!currentUser) {
+                alert('Войдите чтобы оценить видео');
+                return;
+            }
+            
+            if (currentVideo) {
+                currentVideo.likes++;
+                localStorage.setItem('videos', JSON.stringify(videos));
+                document.getElementById('likeCount').textContent = currentVideo.likes;
+            }
+        }
+
+        // Поиск
+        function searchVideos() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filteredVideos = videos.filter(video => 
+                video.title.toLowerCase().includes(query) || 
+                video.description.toLowerCase().includes(query) ||
+                video.channel.toLowerCase().includes(query)
+            );
+            
+            const container = document.getElementById('videosGrid');
+            container.innerHTML = filteredVideos.map(video => `
+                <div class="video-card" onclick="watchVideo(${video.id})">
+                    <div class="video-thumbnail">${video.thumbnail}</div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-channel">${video.channel}</div>
+                        <div class="video-stats">
+                            <span>👁️ ${video.views}</span>
+                            <span>❤️ ${video.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+            updateUI();
+            loadVideos();
+        });
+    </script>
+</body>
+  </html>
