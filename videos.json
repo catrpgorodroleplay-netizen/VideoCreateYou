@@ -1,0 +1,23 @@
+{
+  "videos": [
+    {
+      "id": 1,
+      "title": "Добро пожаловать на CREATE!",
+      "description": "Первое видео на нашей платформе",
+      "videoUrl": "https://example.com/sample-video.mp4",
+      "thumbnail": "🎬",
+      "channel": "CREATE Team",
+      "views": 150,
+      "likes": 25,
+      "createdAt": "2024-01-01T12:00:00Z"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@create.com",
+      "password": "123456"
+    }
+  ]
+}
